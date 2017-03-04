@@ -1,0 +1,325 @@
+/* hdup header file
+ *
+ * $Id: hdup.h.in,v 1.41 2004/09/25 22:47:41 miekg Exp $
+ * Author: Miek Gieben
+ * Creation date: Wed, 27 feb 2002
+ * Gone with autoconf: 16 apr 2003
+ */
+
+#define VERSION     "@PACKAGE_VERSION@"
+#define PROGNAME    "@PACKAGE_NAME@"
+
+#include "config.h"
+
+#define TAR             "@tar@"
+#define MCRYPT          "@mcrypt@"
+#define GPG		"@gpg@"
+#define DEFAULT_PROTO   "@ssh@"
+#define PROTO_OPT       "" /* empty */
+#define BZIP_PROG       "@bzip@"
+#define GZIP_PROG       "@gzip@"
+#define LZOP_PROG	"@lzop@"
+#define SPLIT_PROG      "@split@"
+#define UNSPLIT_PROG    "@cat@"
+#define REMOTE_HDUP     "@prefix@/sbin/hdup"
+#define REMOTE_HDUP_OPT ""      /* default is empty */
+#define FILELIST        "/filelist"
+#define MUTE            " 2>/dev/null"
+#define SPARSE	        " --sparse "
+#define ONEFILE         " --one-file-system "
+#define TAR_CONF_OPT	""
+#define DATE_DEF        0
+#define DATE_ISO        1
+#define DATE_US         2
+#define DEF_USER        "operator"
+#define STATIC          "static"    /* no history = yes */
+/* this is the special GPG string used as algorithm */
+#define GPG_ALG		"gpg"
+/* make gpg act like a filter */
+#define GPG_CRYPT	"--trust-model always -e -r %s --batch -o -"
+#define GPG_DECRYPT	"--trust-model always -d -r %s -o -"
+
+/* hdup's protocol header for talking to another hdup program*/
+#define PROT_VER   "v2"	 /* advanced enough to have versioning, yeah! */
+#define PROT_NAME  "HDUP"
+#define PROT_SEP   "\n"
+
+#define LOGDEBUG(FORMAT, EXP...) \
+debug == 1 ? \
+	fprintf(stderr, "[DEBUG] " FORMAT "\n", EXP) \
+	: 1
+
+/* simplifies logging inside hdup */
+#define LOG(FORMAT, EXP...) \
+quiet > 1 ? \
+	1 \
+	: fprintf(stderr, "%s: " FORMAT ".\n", progname, EXP)
+
+#define SYSLOG(FORMAT, EXP...) \
+	hdup_log == 1 ? \
+	syslog(LOG_WARNING, FORMAT, EXP) \
+	: 1
+	/* one for host (_H) and one for host[which] (_HW) */
+#define SYSLOG_H(FORMAT, EXP...) \
+	SYSLOG("FAILURE, %s, " FORMAT , host->name, EXP)
+#define SYSLOG_HW(FORMAT, EXP...) \
+	SYSLOG("FAILURE, %s, " FORMAT , host[which]->name, EXP)
+
+#define FATAL(FORMAT, EXP...) \
+	do { \
+		fprintf(stderr, "%s: FATAL: " FORMAT ".\n", progname, EXP); \
+			hdup_cleanup(-1,NULL); \
+	} while (0)
+#define FATAL_HOST(HOST, FORMAT, EXP...) \
+        do { \
+                fprintf(stderr, "%s: FATAL: " FORMAT ".\n", progname, EXP); \
+                        hdup_cleanup(-1,HOST); \
+        } while (0)
+
+#define VERBOSE(FORMAT, EXP...) \
+verbose < 2 ? \
+	fprintf(stderr,"%s: " FORMAT ".\n", progname, EXP) \
+	: 1
+
+#define VVERBOSE(FORMAT, EXP...) \
+verbose < 1 ? \
+	fprintf(stderr,"%s: " FORMAT ".\n", progname, EXP) \
+	: 1
+
+	/* print a warning no matter what */
+#define WARN(FORMAT, EXP...) \
+	fprintf(stderr,"%s: WARNING: " FORMAT "!\n", progname, EXP);
+
+/* fix warning on Cygwin */
+#ifndef MAXPATHLEN 
+#define MAXPATHLEN 2048
+#endif /* not MAXPATHLEN*/
+
+#define OVERVIEW   50
+#define MAXDIR     255
+#define MAXHOST    255
+#define DOTEND     13
+
+/* this is ugly and old. When tar did it's own compression
+ * this was usefull. Nowadays hdup does the compression. These
+ * values are used to determine what compression is used for
+ * tar. Better was if this was named, none, gzip, bzip etc
+ */
+#define TAR_NONE   "cpf"
+#define TAR_GZIP   "cpfz"
+#define TAR_BZIP   "cpfj"
+#define TAR_LZOP   "cpfl" /* fake tar commandline */
+
+/* DEcompression is still handled insde tar - this has no influence
+ * on the incremental stuff */
+/* general unpack option */
+#define UNTAR_OPT   "xpfC"
+
+#define UNTAR_NONE   ""
+#define UNTAR_GZIP   "--use-compress-program @gzip@"
+#define UNTAR_BZIP   "--use-compress-program @bzip@"
+#define UNTAR_LZOP   "--use-compress-program @lzop@"
+
+#define DAILY   0
+#define WEEKLY  1
+#define MONTHLY 2
+#define REMOTE  3
+#define RESTORE 4
+#define SCHEME_ILL      5
+
+#define LOCK    0
+#define UNLOCK  1
+
+#define GIGABYTE 1073741824
+#define MEGABYTE 1048576
+#define KILOBYTE 1024
+#define SECDAY   86400
+#define SECHOUR  3600
+#define SECMIN   60
+
+#define PREV       -1
+#define NEXT       1
+#define MAXRESTORE 100
+#define NONE       0
+#define NONE_EXT   ".tar"
+#define GZIP       1
+#define GZIP_EXT   ".tar.gz"
+#define BZIP       2
+#define BZIP_EXT   ".tar.bz2"
+#define CRYPT      4
+#define MCRYPT_EXT ".nc"
+#define SPLIT      5
+#define SPLIT_EXT  "__split__"
+#define LZOP	   6
+#define LZOP_EXT   ".tar.lzo"
+#define SPLIT_WILDCARD_EXT  "*__split__"
+/* these defines are used in hdup_comression_crypt */
+#define MCRYPT_GZIP_EXT     ".tar.gz.nc"
+#define MCRYPT_BZIP_EXT     ".tar.bz2.nc"
+#define MCRYPT_LZOP_EXT	    ".tar.lzo.nc"
+#define MCRYPT_NONE_EXT     ".tar.nc"
+
+#define BUFSIZE          2048
+
+/* the number of keywords */
+#define KEYWORDS    35
+/* the keywords are defined in hdupconf.c  */
+#define KEY_BACKUP      0
+#define KEY_EXCLUDE     1
+#define KEY_PROTO_OPT   2
+#define KEY_USER        3
+#define KEY_COMP        4
+#define KEY_PRE         5
+#define KEY_POST        6
+#define KEY_PROTO       7
+#define KEY_INCLUDE     8
+#define KEY_DATESPEC    9  
+#define KEY_ALG	        10
+#define KEY_KEYFILE     11
+#define KEY_OVERWRITE   12
+#define KEY_SKIP        13
+#define KEY_FORCE       14
+#define KEY_SPARSE      15
+#define KEY_TAR         16
+#define KEY_FIND        17
+#define KEY_ALWAYS      18
+#define KEY_ALLOW       19
+#define KEY_REMOTE_HDUP 20
+#define KEY_REMOTE_HDUP_OPT 21
+#define KEY_ARCHIVE     22
+#define KEY_MCRYPT      23
+#define KEY_HISTORY     24
+#define KEY_ONEFILE     25
+#define KEY_CHUNKSIZE   26
+#define KEY_FREE        27
+#define KEY_LOG         28
+#define KEY_INHERIT     29
+#define KEY_COMPLEVEL   30
+#define KEY_GPG		31
+#define KEY_GROUP	32
+#define KEY_TAR_OPT	33
+#define KEY_NOBACKUP	34
+
+/* holds the %-vars (%h,%a,%s,%e,%u,%c,%g) */
+#define SUBS    7
+
+#define ALGORITHMS { \
+	{1, "cast-128"}, \
+	{2, "gost"}, \
+	{3, "rijndael-128" }, \
+	{4, "twofish" }, \
+	{5, "arcfour" }, \
+	{6, "cast-256" }, \
+	{7, "loki97" }, \
+	{8, "rijndael-192" }, \
+	{9, "saferplus" }, \
+	{10, "wake" }, \
+	{11, "blowfish-compat" }, \
+	{12, "des" }, \
+	{13, "rijndael-256" }, \
+	{14, "serpent" }, \
+	{15, "xtea" }, \
+	{16, "blowfish" }, \
+	{17, "enigma" }, \
+	{18, "rc2" }, \
+	{19, "tripledes"}, \
+	{0, NULL} \
+}
+
+struct tab {
+	int sym;
+	const char *name;
+};
+
+struct argument_t {
+	char *configpath;
+	unsigned int scheme;
+	char *host;
+	char *date;
+	char *extractdir;
+	char *extractfile;
+};
+
+/* hold all the info about a specific host */
+struct host {
+	char *name;
+	char *tar;
+	char *archive;
+	char *path[MAXDIR];
+	char *exclude[MAXDIR]; /* holds the exclude globbing patterns */
+	char *include[MAXDIR]; /* holds the include globbing patterns */
+	char *user;
+	char *group;
+	char *mcrypt;
+	char *gpg;
+	char *keypath;
+	char *alg;
+	char *remote;
+	char *compression;  
+	char *date;
+	char *datespec;
+	char *basename;
+	char *dirname_date;
+	char *dirname_etc;
+	char *filelist;
+	char *excludelist;
+	char *inclist;
+	char *archivename;
+	char *prerun;
+	char *postrun;
+	char *chunksize;
+	char *free;
+	char *complevel; /* compression level */
+	/* keep an eye on time */
+	time_t elapsed;
+        /* how many bytes are written */
+        unsigned long long int bytes;
+	/* define own options for each proto */
+	char *proto;
+	char *proto_opt;
+	char *remote_hdup;
+	char *remote_hdup_opt;
+	char *tar_conf_opt;		/* Patch from Haskins */
+	char *nobackup;			/* look for .nobackup files */
+	/* folded in the options from hdup-1.5 */
+	int overwrite;
+	int skip;
+	int force;
+	int sparse;
+	int always;
+	int onefile;
+	int allow_remote; /* host allowed to write archive */
+	int history;      /* store everything in one dir or not */
+	int log;          /* do syslogging */
+};
+
+struct header {
+	char *prot_name;
+	char *prot_ver;
+	char *hostname;
+	char *scheme;
+	char *date;
+	char *compression;
+	char *encryption;
+	char *extractdir;
+};
+
+extern unsigned int quiet;
+extern unsigned int debug;
+extern unsigned int patched_tar;
+extern int verbose;
+extern unsigned int hdup_log;
+extern sig_atomic_t hdup_pipe;
+extern sig_atomic_t hdup_sig;
+extern sig_atomic_t hdup_alrm;
+extern char *progname;
+extern char *scheme[];
+extern char *keyword[];
+extern char *subvar[];
+extern char *dots;
+extern char *spaces;
+extern const char ok_chars[];
+typedef struct host host_t;
+typedef struct host * phost_t;
+typedef struct header header_t;
+typedef struct header * pheader_t;

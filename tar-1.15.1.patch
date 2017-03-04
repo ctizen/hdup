@@ -1,0 +1,18 @@
+--- tar-1.15.1/src/create.c     2004-10-04 11:21:31.000000000 +0200
++++ tar-1.15.1.local/src/create.c       2005-06-30 13:35:51.647593741 +0200
+@@ -1175,7 +1175,14 @@
+                          buffer = xrealloc (buffer, buffer_size);
+                        }
+                      strcpy (buffer + plen, q + 1);
+-                     dump_file (buffer, -1, (dev_t) 0);
++                     /* Hack to make --listed-incremental and
++                      * --files-from and --no-recursion work;
++                      */
++                     if (!listed_incremental_option &&
++                                     !files_from_option &&
++                                     !recursion_option) {
++                             dump_file (buffer, -1, (dev_t) 0);
++                     }
+                    }
+                  q += qlen + 1;
+                }

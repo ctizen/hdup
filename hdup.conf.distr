@@ -1,0 +1,78 @@
+####
+# config for hdup
+#
+# see man 5 hdup.conf for more information
+# '#' is comment, empty lines are ignored
+#
+# Skeleton hdup.conf file to be installed by distribution
+# See for a full explanation the hdup.conf manpage
+#
+####
+
+# everything put under [global] is "inherited" by 
+# all the other hosts defined in this config file
+[global]
+# where to put the tar archives
+archive dir = /vol/backup/
+
+# use the normal date
+date spec = iso
+
+# try to figure out the current scheme, and perform the 
+# correct backup
+always backup = on
+
+# skip the archive dir from the backup
+skip = on
+
+# restore option: disallow restoring to /
+force = no
+
+# overwrite existing archives in 'archive dir'
+overwrite = on
+
+# ssh options
+proto = /usr/bin/ssh
+proto option =  -q -oProtocol=2
+
+# chown the archives to this user
+user = operator
+
+# compression options
+compression = bzip
+compression level = 6
+
+# is such a file is found, exclude that directory
+nobackup = .nobackup
+
+# give tar some extra options, not needed
+# tar option = 
+
+# my own host
+[elektron]
+# what to backup, separate with ,.
+# For directories add closing slash, like /home/
+dir = /home/
+# don't include theses directories
+exclude = lost\+found/, /proc/, /dev/, /sys/
+# if we want to split it (to fit a CD)
+#chunk size = 640m
+# enable for nagging
+#postrun = /etc/hdup/postrun-warn-user %s
+
+# my laptop will put some archive heres, put them in
+# them in the correct place 
+[www-host]
+dir = /var/www
+# log to syslog
+log = yes
+exclude = /var/.*/docs/
+one filesystem = no
+compression = gzip
+#key = key2
+#algorithm = tripledes
+allow remote = no
+free = 20m
+#prerun = echo %c %e
+remote hdup = /mnt/key/src/hdup2
+remote hdup option = -c /mnt/key/hdup2.conf

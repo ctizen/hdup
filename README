@@ -1,0 +1,27 @@
+HDUP2 - README
+
+   To compile and install hdup2 just do a:
+   ./configure && make install
+
+Current Issues
+#1
+   hdup2 does not include directory information in the backup. Why? Because
+   Gnu tar cannot handle that correctly. If hdup2 would include this
+   information in the backup list, the backup (ie. the tar file) would
+   include everything twice! Yes, this is a bug in Gnu tar and will be
+   fixed eventually.
+   So hdup2 does not include this information.
+
+   Related to this is that empty directories are not included in the
+   archive.
+
+   As soon as Gnu tar can handle this, hdup2 will be able to handle 
+   this. 
+
+   I've included a patch to tar, which when applied will allow you to do
+   sane backups. 
+
+#2 
+   Older tar's (1.3.25) do not work reliabily with hdup2. If you cannot
+   upgrade Gnu tar to a more modern version don't upgrade to hdup2, but 
+   stay with hdup1.6. Current Gnu tar releases are for instance 1.15.1.

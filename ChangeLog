@@ -1,0 +1,252 @@
+10 Dec 2005: 2.0.14 Miek <miek@miek.nl>
+  - bugfix release -
+  * bug #3: when adding a file to the filelist also use NULL
+    as a delimeter, not a newline. (Thanks to Chad Sawatzky
+    for reporting)
+  * Overhauled the tarball making. It's now distributed as
+    hdup2-<version>.tar.bz2 and unpacks in hdup-<version>/
+    directory.
+
+25 Nov 2005: 2.0.13 Miek <miek@miek.nl>
+  - bugfix release -
+  * Don't create a LOCK file when restoring
+  * Cosmetic updates to the restore code were made
+  [bugs]
+  * Fixed a NULL derefence when restoring
+  * Make the bytes counter a unsigned long long, to avoid the
+    overflow at 4 GB.
+
+02 Oct 2005: 2.0.12 Miek <miek@miek.nl>
+  - very minor bug fix release -
+  [bugs]
+  * Don't display the -P warning when receiving a remote archive - 
+    as it is useless then.
+  * Don't say a remote archive failed to be written when in fact
+    it did succeed.
+  [build]
+  * cleanup the svn directory
+  * re-add the examples/ dir, this was somehow lost during my
+    harddisk crash
+
+30 Sept 2005: 2.0.11 Miek <miek@miek.nl>
+  - minor bug fix and feature additions release -
+  [bugs]
+  * Debian bug #322421 fixed. Static is now 'static' and not 'stati'
+  * Minor corrections to hdup.conf(5)
+  * Skip is now always enabled 
+  * Install a script which says to put your monthly dump
+    on permanent storage (isn't enabled by default)
+  * With -VV -D a list of backed up files it printed
+  * Show the amount of bytes written when doing a remote
+    backup. The logging and overview message have changed
+    slightly for this change, resp:
+    o   Bytes written:  46K
+    and:
+    o   SUCCESS, elektron (monthly): 22K, 0:00:00
+  * If hdup is set suid or sgid it refuses to run as hdup
+    was never designed to handle that.
+  * A double free in the postrun/prerun code was fixed.
+  * Add a warning when running without -P (patched tar) - as this 
+    might lead to incomplete backups
+
+07 Aug 2005: 2.0.10 Miek <miek@miek.nl>
+  - small bug fix release -
+  [bugs]
+  * Used bfbtester to make hdup more robust
+  * Bug #23: -s <file> (specific restore) is working again
+  * Set default prefix back to /usr
+  * Use \0 as a delimeter when creating the filelist. Tar
+    is now called with --null.
+  * Correctly display the help when using long options (reformatted
+    it too)
+
+04 Jul 2005: 2.0.9 Miek <miek@miek.nl>
+  - major bug fixes - 
+  [bugs]
+  * -P flag was added, which stands for patched-tar, this enables
+    --no-recusion for tar and allows directory information to be
+    included in the archives. See Debian bug: 302790
+    Instruction and the patch to tar are on the hdup project page.
+  * Bug #22: don't use isblank() because it's a gnu-ism
+  * removed unneeded reference to /home/miekg in contrib/dirinfo.sh (thanks
+    to Crispin Boylan for spotting)
+  * @sysconfdir@ fixes and tweaks. Patches and ideas from 
+    Francesco P. Lovergine and Adam Piatyszek.
+  [remarks]
+  * There are warnings when compiling on FreeBSD (MIN/MAX redefined). These
+    are harmless and besides they are in system libs, so I can not fix
+    them...
+
+22 Jun 2005: 2.0.8 Miek <miek@miek.nl>
+  - bug fixes -
+  [bugs]
+  * When restoring the pre-run command was run twice.
+    (Found, fix, patch by Arnaud de Grandmaison)
+  * When restoring the check to see if an archive exists should
+    be done after the pre-run script ran.
+    (Found, fix, patch by Arnaud de Grandmaison)
+  * $DESTDIR failed to make in the Makefile, so applied patch again
+  * Check 'keyword=<empty>' in the config file and emit a warning that
+    that prob. won't work. (Thanks to Billy Newsom for reporting)
+  * Added contrib/hdup.sh - a small script to help manage your backups
+    (From: Juraj.Kubelk)
+  * Bug #21: update the link to gnu tar on the website, (thanks to Robert
+    Locke). Also update the FAQ.html in the hdup2 tar.
+  * Added a rough bash shell script that can add the missing directory
+    info to an archive (not impl./not tested). This is a quick hack. In 
+    2.0.9 I hope to have a better solution.
+
+18 Mar 2005: 2.0.7 Miek <miek@miek.nl>
+  - bug fixes -
+  [Bugs]
+  * Really allow \, in the config file. This is done with
+    an evil hack whereby \, is rewritten as <space>\. It's
+    ugly but I'll leave it in (until I rewrite the whole
+    parser in yacc/lex someday - if ever).
+  * The locking has changed and now uses open(bla, O_EXCL|O_CREAT)
+    This closes a race condition - but this fails on older NFS < 3,
+    but I don't expect anybody to run that these days.
+    (thanks to Hotzi for reporting and testing)
+  * When adding a / to a path, be sure there is room, a few people
+    were bitten by this. [Bug #19]
+  * Applied $DESTDIR patch from Richard Bos, allows mortal users
+    to make an RPM, this may impact other package creators.
+
+03 Feb 2005: 2.0.6 Miek <miek@miek.nl>
+  - bug fixes -
+  [Bugs]
+  * Fix a bug whereby the files to be backed up where 
+    not counted correctly (patch from:  Peter Baumann)
+    This could lead hdup2 into creating an empty archive,
+    while it should have backed up something. 
+  * Thanks also go to Hotzi for pre-testing this release.
+  * Due to some Debian weirdness my bugzilla database
+    experienced some weirdness. I've lost some bug reports
+    in the process, but the old ones are back again :)
+    [I have to look into this in detail]
+  * Cleanup LOCK files when compilation in the regexps
+    fails.
+  * Allow \, in the config file. (This fixes another 
+    debian bug)
+  * Added -D switch to print debugging information
+  * Make one-filesystem working again (Thanks to Peter
+    Baumann)
+  * When restoring give a warning when an entered date
+    is likely not to match the current date format.
+  * Some changes in the remote restore code to make it
+    more robust.
+  * Updated the online FAQ on miek.nl
+  * Disallow -s <file> and remote restore (for now)
+  [Todo]
+  * documentation
+
+19 Jan 2005: 2.0.5: Miek <miek@miek.nl>
+  - bug fixes -
+  [Bugs]
+  * [Bug #3] Compile fix for FreeBSD 4.11 (actually for older
+       gcc's (<3)) (Applied patch from Martin Chabot)
+  * [Bug #6] Infinite loop on none existing dirs was fixed
+  * [Bug #4] Fix pre- and post-run scripts.
+  * Make hdup really read long configuration lines 
+    (Tnanks to Lars Brown for reporting) 
+  * Readded the example cron file and no-history-post-run.sh
+    (290723@bugs.debian.org)
+  * Small addition to hdup.conf example (290599@bugs.debian.org)
+    related to the include/exclude examples in there
+  * Fix 290600@bugs.debian.org. The comma-thingy is on the todo.
+  * Fix the dot underflow message
+  * Default location of the remote hdup is now set correctly
+  * Remove LOCK when creation of empty archives fails
+  * Added ':' to ok_chars
+  [Todo]
+  * documentation
+  * comma's in hdup.conf
+
+6 Jan 2005: 2.0.4 Miek <miek@miek.nl>
+  - bug fixes -
+  [Bugs]
+  * Select the right compression (thanks to GT)
+  * fixes a double increment in the include/exlude parsing 
+    (thanks to Viktor Vraniak)
+  * Re-added the examples/ directory
+  * Fixed the directory include/exclude
+  * Set the user from the config file to the host structure
+    (thanks to Drdák Radoslav for reporting)
+
+22 Dec 2004: 2.0.3 Miek <miek@miek.nl>
+  - bug fixes -
+  [Bugs]
+  * Incremental backups are fixed
+  * Security fixes (thanks to pscan, rats, flawfinder)
+  * Compile fix for OSX 
+  * Compilation now needs gmake
+  [Features]
+  * unexpandable arguments in the pre- and post- scripts
+    are expanded to -empty-
+  [Remark]
+  * You need 'gmake' to compile it 
+  [Todo]
+  * It does not compile on FreeBSD 4.11 (it does on 5.3...)
+
+14 Dec 2004: 2.0.2 Miek <miek@miek.nl>
+  - major bug fixes -
+  [Bugs]
+  * Fix the include/exclude mechanism. Per default there
+    is a .* include, which is overriden by any user defined
+    include.
+  * Use -f when compressing (see bzip2/gzip/lzop man pages)
+  * Removed bogus fprintf
+  * Gzip compression wasn't enabled by default
+  [Todo]
+  [Features]
+  * Use fread, speedup of factor 2 (est.)
+
+12 Nov 2004: 2.0.1 Miek <miek@miek.nl>
+  - bug fixes -
+  [Bugs]
+  * Fix autconf, put glib-2.0.m4 directly in the distribution
+  * Only test for dirs or not, in walker.c
+  * Hdup remote: wrote x bytes now uses k/M/G suffix
+  [Todo]
+  * documentation
+  [Features]
+  * Allow newlines to be escaped (\\n)
+
+11 Nov 2004: 2.0.0 prerelease2 Miek <miek@miek.nl>
+  - bug fixes -
+  [Bugs]
+  * Check for SIGKILL in walker.c
+  * Really count how many files we need to backup and do
+    the actual backing up
+  * Fix incremental dumps
+  * Patch from boris to fix the spec file
+  [Features]
+  * -
+  [Todo]
+  * regexps documentation
+
+04 Nov 2004: 2.0.0 prerelease Miek <miek@miek.nl>
+  - major overhaul and new build depencies -
+  [Features]
+  * Moved to Glib for lowlevel C function
+    - lots of changes to the source
+    - g_strdup_printf and g_strconcat are now used a lot
+  * #define LEN gone
+  * Moved to subversion for development
+  * Dependency on find was removed. We use our own routine now.
+  * Support for .nobackup files (see nobackup keyword)
+  * Updated documentation
+  * Public repository accessible (TODO)
+  * Makefile.in made smaller
+  * Totally reworked the include/exclude mechanism. It is now 
+    POSIX regexp based.
+  * hdup will now always make to passes over the harddisk - one
+    to determine what to backup and then the actual backup. Yes I
+    know; this is a race.
+
+  [Bugs]
+  * Bug #12 fixed; removed -a in GPG encryption/decryption
+  * Bug #16 fixed: the non-tweaked hdup.conf.distr is installed
+    as the default hdup.conf
+  * Bug fixed: the include and exclude lists are not copied to 
+    other host when they define their own lists.

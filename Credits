@@ -1,0 +1,55 @@
+The following persons have helped with the development of hdup.
+
+Miek Gieben, miek@miek.nl
+	o primary author
+
+Boris Goldowsky and Robert Haskins were extremely helpfull in 
+preparing the first working hdup2.0.x release.
+
+Wouter van Gils
+	o initial cron file
+	o initial testing
+	o documentation
+
+Milan Gigel
+Petr Divina
+	o helped a lot with (early) testing
+	o (a lot of) feature requests
+
+Jonathan Baker-Bates
+	o helped to nail down bugs in restore and encryption
+	  part of hdup
+	o README clarifications
+
+Boris Goldowsky
+	o helped a lot with testing of hdup 1.6.X (on Mac OS X)
+	o backup script
+
+Assorted patches, ideas, bug reports/bugfixes: (in no particular order)
+	o Anders Bjorklund
+	o Jiri Bajer
+	o Francesco P. Lovergine
+	o Frank Behrendt
+	o Charles Shannon Hendrix
+	o Marek Chlopek
+	o Ruben van de Ginste
+	o Matthew Gream (inherit keyword)
+	o Jesper K. Pedersen
+	o Josh Richards
+	o Christian Josefsson
+	o Andreas Nilsson
+	o Uli Bubenheimer
+	o Iiro Niinikoski
+	o Adam Piatyszek
+	o Rob Cotrone
+	o Yoichi Takayama
+	o Robert Haskins
+	o Daniel Webert
+	o David Ziman
+	o GT
+	o Crispin Boylan
+	o Peter Baumann
+
+And the kind people from the hdup-user mailing list.
+    
+Also see ChangeLog.

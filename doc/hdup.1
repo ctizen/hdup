@@ -1,0 +1,290 @@
+.\" @(#)hdup.1 1.7.0 20-Mar-2003 OF; 
+.TH hdup 1 "18 Mar 2003"
+.SH NAME
+hdup \- harddisk duplicator/harddisk backupper - backup to harddisk
+.SH SYNOPSIS
+.B hdup
+[
+.IR OPTION
+]
+.IR SCHEME 
+.IR HOST 
+[
+.IR @USER@REMOTEHOST
+]
+\fI(1st format)\fR
+.br
+.B hdup
+[
+.IR OPTION
+]
+.IR restore
+.IR HOST
+.IR DATE
+.IR DIRECTORY
+[
+.IR @USER@REMOTEHOST
+]
+\fI(2nd format)\fR
+
+.SH DESCRIPTION
+\fBHdup\fR is used to backup a filesystem. Features include:
+.PD 1
+.TP
+.B o
+incremental backups: monthly, weekly and daily dumps,
+.TP
+.B o
+encryption of the archive (via \fBmcrypt\fR or \fBGPG\fR),
+.TP
+.B o
+compression of the archive (bzip/gzip/lzop/none),
+.TP
+.B o
+possibility to transfer the archive to a remote host, 
+.TP
+.B o
+possibility to restore the archive from a remote host, 
+.TP
+.B o
+ability to split up archives,
+.TP
+.B o
+no obscure archive format (it is a normal compressed tar file), and
+.TP
+.B o
+simple to use.
+.PP
+The behaviour of \fBhdup\fR is controlled by its configuration file (see
+\fBhdup.conf(5)\fR). Internally \fBhdup\fR uses \fBGNU tar\fR to actually create
+the backups.
+
+.SS First format
+When using the 1st format \fBhdup\fR performs a backup. Remember: \fBhdup\fR
+pushes a backup \fIfrom\fR the localhost \fIto\fR the remote host.
+
+The sort of backup is specified by \fISCHEME\fR:
+.TP 
+\fBmonthly\fR
+Make a full (null) dump of the filesystem.
+.TP 
+\fBweekly\fR
+Make an incremental dump of the filesystem relative to the latest
+monthly dump. If \fBhdup\fR cannot find a monthly dump it will complain, unless
+\fIalways backup\fR is on. Then a monthly dump will be performed.
+.TP 
+\fBdaily\fR
+Make an incremental dump of the filesystem relative to the latest
+weekly dump. If \fBhdup\fR cannot find a weekly dump it will complain, unless
+\fIalways backup\fR is on. Then a weekly dump will be performed.
+
+.PP
+\fIHOST\fR is the host of which \fBhdup\fR should perform the backup. This
+should match a '[HOST]' statement in the configuration file. The
+directories of that host (specified with 'dir = \fIdir1\fR, \fIdir2\fR', ...) will
+be backed up to the directory specified with 'archive dir = \fIdir\fR'. 
+If \fIHOST\fR is not found no backup will be made.
+
+.PP
+\fI@USER@REMOTEHOST\fR is the host to which the archive should be
+transfered. This must include the user name. E.g \fI@miekg@elektron.atoom.net. 
+It is illegal to specify the colon ':'. \fBhdup\fR must be
+present on the remote host. The location of this remote \fBhdup\fR is specified using
+\fIremote hdup\fR.
+
+Any program capable of transferring files can used for this purpose. Currently
+tested is \fBssh\fR. Other programs like \fBrsync\fR (not tested) may also work. Any program
+with the following characteristics will do:
+.TP
+.B o
+must be usable as a filter (read from stdin, write to stdout),
+.TP
+.B o
+must support \fIuser@remotehost\fR syntax.
+
+.SS Second format
+When using the 2nd format a previous backed up filesystem is restored.
+Remember: \fBhdup\fR pushes a restore \fIfrom\fR the remote \fIto\fR 
+the local host. This is opposite from the backup operation!
+
+.PP
+\fIHOST\fR is the host who's archives should be restored.
+
+.PP
+\fIDATE\fR everything up to this date will be restored. \fBhdup\fR will
+look for the most recent monthly archive, then the most recent weekly
+and finally for the daily to pad up to date given. The \fIDATE\fR can
+either be specified as DD-MM-YYYY (date spec = default), as YYYY-MM-DD
+(date spec = iso) or as MM-DD-YYYY (date spec = american). This is controlled
+from the configuration file. 
+
+A special date is 'static' which instructs
+\fBhdup\fR to look in the 'static' directory. This is used when 'no history =
+yes'. This is dangerous to use because \fBhdup\fR will overwrite the old backup
+file with the new one. When your system crashes during the overwrite you have
+no backup at all! Only use this when you \fIreally\fR don't have room for two
+monthly backups.
+
+Another special date is 'today' which instructs \fBhdup\fR to use the current date.
+
+.PP
+\fIDIRECTORY\fR tells \fBhdup\fR to which directory the archive should
+be untarred to. Be very careful when running \fBhdup\fR as root and
+specifying '/' as the directory. Version 1.4 and above refuses to restore to '/'.
+This can be overridden by specifying 'force = on/yes' in the configuration.
+
+.PP
+\fI@USER@REMOTEHOST\fR is the host to which the archive should be restored.
+This must include the user name. E.g \fI@miekg@elektron.atoom.net.
+As as version 1.6.6 it is illegal to specify the colon ':'. On the remosthost
+and in \fIDIRECTORY\fR the archive is restored. \fBhdup\fR must be present 
+on the remote host.
+
+.SS Status message
+When \fBhdup\fR is finished with its current operation it will print
+an overview message:
+
+.TS
+tab ($);
+l l.
+Hdup version.:  1.6.6
+
+Host.........:  elektron
+Date.........:  2003-02-02
+Scheme.......:  monthly
+Archive......:  elektron.2003-02-02.monthly.tar.gz
+Encryption...:  no
+Archive size.:  257k
+Elapsed......:  0:01:27
+Status.......:  successfully performed backup
+.TE
+.PP
+Which can be mailed to you via cron.
+
+.SH OPTIONS
+.TP
+\fB\-c, --config=\fIconfig\fR
+Location of the configuration file. The default location of \fBhdup\fR's
+configuration file is \fI/etc/hdup/hdup.conf\fR.
+.TP
+\fB\-s, --specific=\fIfile\fR
+Restore a specific file from an archive. \fIfile\fR must be the \fBfull\fI path
+to the file, relative paths will not work.
+.TP
+\fB\-i, --ignore-tar
+Ignore tar errors when restoring.
+.TP
+\fB\-I, --ignore-conf
+Ignore errors in the configuration file.
+.TP
+\fB\-P, --patched_tar
+Tar is patched so that it can handle \fI--no-recursion\fR,
+\fI--listed-incremental\fR and \fI--files-from\fR together. This options
+enables two things in hdup; 1) directory info is written to 'filelist' and
+2) \fI--no-recursion\fR is given to \fBtar\fR.
+
+This solves the bug whereby \fBhdup\fR wouldn't include directory
+information in the archives.
+.TP
+\fB\-d, --dryrun
+Do a dryrun - don't do anything with the filesystem
+.TP
+\fB\-q, --quiet
+Suppress the output of the subprocesses (like 'tar' and 'ssh').
+.TP
+\fB\-q \-q, --quiet --quiet
+Suppress the logging output from \fBhdup\fR.
+.TP
+\fB\-q \-q \-q, --quiet --quiet --quiet
+No logging at all. Even no overview message.
+.TP
+\fB\-V
+Be more verbose.
+.TP
+\fB\-V \-V
+Be even more verbose. This will show which files are backed up by
+\fBhdup\fR IF you also supply the -D option.
+.TP
+\fB\-h, --help
+A help message.
+.TP
+\fB\-v, --version
+Show the version of hdup.
+.TP
+\fB\-D, --debug
+Show a lot of information which can aid debugging. 
+
+.PP
+The -V and -q options do \fInot\fR effect each other. A '-qqq -VV' option list
+will mean that \fBhdup\fR will show what is run, but nothing else (no overview message
+and no warning nor errors).
+
+.SH ENCRYPTION
+\fBhdup\fR can encrypt the archives, \fBmcrypt\fR is used for the actual
+encryption. As of version 1.6.25 \fBGPG\fR can also be used to encrypt
+the archive. Note that currently remotely restoring a GPG encrypted archives
+is not working.
+
+.SS mcrypt
+With \fBmcrypt --list\fR you get a list of the algorithms
+mcrypt supports:
+
+.TS
+tab (@); 
+l l.
+\.\.\.
+\fIserpent\fR (32): cbc cfb ctr ecb ncfb ofb nofb 
+\fIwake\fR (32): stream 
+\fIloki97\fR (32): cbc cfb ctr ecb ncfb ofb nofb 
+\fIrijndael-128\fR (32): cbc cfb ctr ecb ncfb ofb nofb 
+\fIrijndael-192\fR (32): cbc cfb ctr ecb ncfb ofb nofb 
+\.\.\.
+.TE
+.PP 
+If you want to use \fIloki97\fR you specify \fBalgorithm = loki97\fR in
+hdup.conf. The same goes for all the other algorithms.
+
+.SS GPG
+To use \fBGPG\fR the following is needed. Set \fBalgorithm = gpg\fR and
+\fBkey = user ID of key\fR. In my case I've created a GPG key with user ID
+of 'miekg' so I use:
+.br
+\fBalgorithm = gpg\fR
+.br
+\fBkey = miekg\fR
+.br
+The \fBkey\fR is supplied to \fBgpg\fR with the \fI-r\fR argument. See the manpage 
+of \fBgpg\fR for more details.
+.PP
+When restoring a GPG encrypted archive you will be prompted to unlock your
+private key.
+
+.SH AUTHOR
+Written by Miek Gieben. Wouter van Gils helped a lot with testing pre-release
+versions. User feedback is appreciated.
+
+.SH REPORTING BUGS
+Report bugs to <hdup-user@miek.nl>. 
+
+.SH BUGS
+The %a expansion is not always the same in the prerun and postrun scripts (when
+using encryption).
+
+.SH LIMITATIONS
+Under Linux kernel version 2.2 the archive size cannot exceed two (2) Gigabyte.
+If you need larger archives sizes you should upgrade your kernel. You can
+however solve this by using \fIchunk size\fR. Just define your maximum allowed
+size, something like \fIchunk size = 1800M\fR and you're set.
+.PP
+If you encrypt archives and want to restore them, you are forced to use one
+encryption scheme for all the backups. \fBhdup\fR does not store the key
+and algorithm with the archive, thus it is impossible to restore archives that
+use different keys and algorithms.
+
+.SH COPYRIGHT
+Copyright (C) 2001-2005 Miek Gieben. This is free software. There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR
+PURPOSE.
+
+.SH SEE ALSO
+\fBhdup.conf(5)\fR for information about \fBhdup\fR's configuration file.

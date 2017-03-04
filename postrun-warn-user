@@ -1,0 +1,24 @@
+#!/bin/sh
+
+# I'm just burned by a rather bad crash and even I didn't
+# have my backups correctly setup. So I lost data :-(
+# Warn the user after a monthly and weekly to move
+# the backups to other systems and/or to CD/DVD
+# Miek, 16 Sept 2005.
+
+# one arg
+scheme=$1
+
+if [ -z $scheme ]; then exit; fi
+
+if [ $scheme = "weekly" ]; then
+        echo "** Don't forgot to write this backup to a **
+**          more permanent storage        **"
+        exit
+fi
+
+if [ $scheme = "monthly" ]; then
+        echo "*** IT IS RECOMMENDED THAT YOU WRITE YOUR PREVIOUS ***
+***       MONTH DUMP TO PERMANENT STORAGE          ***"
+        exit
+fi

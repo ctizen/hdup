@@ -1,0 +1,35 @@
+#########################################
+# cron file of hdup, the backup utility #
+#########################################
+ 
+# minute         0-59
+# hour           0-23
+# day of month   1-31
+# month          1-12 
+# day of week    0-7 (0 or 7 is sunday)
+
+# In debian the "root" argument in a cron line is allowed. I have conformation
+# that this is not the case in e.g. SuSE Linux.
+#
+# Put this for instance in /etc/cron.d
+# be AWARE that files in there must NOT contain dots (on Debian)
+
+# --- start of new backup season --- #
+00 02 1 * * root /usr/local/sbin/hdup -q -q monthly host
+
+# --- the weekly --- #
+00 06 1,7,14,21,28 * * root /usr/local/sbin/hdup -q -q weekly host
+ 
+# --- the daily --- #
+00 08 1-31 * * root /usr/local/sbin/hdup -q -q daily host
+
+# --- remote backup --- #
+# 00 06 1-31 * * root /usr/local/sbin/hdup -q -q daily host @user@remotehost
+
+# first remove the files
+#0 3 * * * root find /backup/path/host/ -mtime +32 -depth -type f -print0 -mindepth 1 | xargs --no-run-if-empty --null rm -f
+# then the dirs
+#30 3 * * * root find /backup/path/host/ -mtime +32 -depth -type d -print0 -mindepth 1 | xargs --no-run-if-empty --null rmdir 
+
+# Also see: http://pflanze.mine.nu/~chris/scripts/utilities/purgeolditems
+# for a secure perl version with the same functionality.

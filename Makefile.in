@@ -1,0 +1,38 @@
+# Standard installation path names
+VERSION		= @PACKAGE_VERSION@
+# use by tar to package hdup
+home	= $(shell pwd)
+base	= $(shell basename ${home})
+hdup2	= hdup2
+
+.PHONY:	clean install all uninstall tar tarclean web doclean
+
+all:	hdup Makefile
+
+hdup:	
+	@echo hdup version: ${VERSION}
+	@(cd src ; $(MAKE) all)
+	
+clean: tarclean docclean
+	@rm -f Makefile
+	@rm -f config.log
+	@rm -rf config.status
+	@rm -rf autom4te.cache
+	(cd src ; $(MAKE) clean)
+
+tarclean:
+	@echo -n "Removing .tar files..."
+	@rm -f hdup*.tar.bz2
+	@echo "done"
+
+docclean:
+	@echo -n "Removing web docs..."
+	@rm -f doc/hdup.1.html doc/hdup.conf.5.html
+	@rm -f doc/grohtml*.png
+	@echo "done"
+
+uninstall:
+	@(cd src ; make uninstall )
+
+install: 
+	@(cd src ; make install )
