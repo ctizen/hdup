@@ -10,6 +10,7 @@ license=('GPL2')
 depends=('coreutils' 'mcrypt' 'openssh' 'gnupg' 'gzip' 'bzip2' 'lzop' 'glibc' 'glib2')
 backup=('etc/hdup/hdup.conf')
 source=("${pkgname%-git}::git+http://github.com/ctizen/hdup.git")
+sha512sums=('SKIP')
 
 build() {
   cd $srcdir/${pkgname%-git}
